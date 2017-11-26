@@ -31,6 +31,12 @@ IpWatch.prototype.MethodCallSucceeded = function() {
         this.methodCallFailCount = 0;
     }
 }
+IpWatch.prototype.getAttempts = function() {
+    return this.attempts;
+}
+IpWatch.prototype.incrementAttempts = function() {
+    this.attempts++;
+}
 IpWatch.prototype.PublicCall = function() {
     if (! this.isWhitelisted)
     {
@@ -42,7 +48,7 @@ IpWatch.prototype.Clear = function() {
     this.methodCallFailCount = 0;
 }
 IpWatch.prototype.getLatestAttemptTime = function() {
-    return this.latestattempt;
+    return moment(this.latestattempt).toDate();
 }
 IpWatch.prototype.setLatestAttemptTime = function(latestattempt) {
     this.latestattempt = latestattempt;
