@@ -1,65 +1,62 @@
-var moment     = require("moment");
+var moment = require("moment");
 
-var isWhitelisted = false;
+var whitelisted = false;
 var methodCalls = 0;
 var publicCalls = 0;
-var methodCallFailCount = 0;
+var invalidTokens = 0;
 var attempts = 0;
-var latestattempt = 1;
+var latestAttemptTime = 1;
 
-var IpWatch = function (isWhitelisted, attempts, latestattempt) 
+var IpWatch = function (isWhitelisted, attempts, latestattempttime) 
 {
-    this.isWhitelisted = isWhitelisted;
+    this.whitelisted = isWhitelisted;
     this.attempts = 0;
-    this.latestattempt = latestattempt;
+    this.latestAttemptTime = latestattempttime;
 }
-IpWatch.prototype.isWhitelisted = function () {
-    return this.isWhitelisted;
+IpWatch.prototype.IsWhitelisted = function () {
+    return this.whitelisted;
 }
-IpWatch.prototype.methodCallFailCount = function() {
-    return this.methodCallFailCount;
+IpWatch.prototype.GetInvalidTokensCount = function() {
+    return this.invalidTokens;
 }
-IpWatch.prototype.MethodCallFailed = function() {
-    if (! this.isWhitelisted)
-    {
-        this.methodCallFailCount++;
-    }
+IpWatch.prototype.InvalidToken = function(isInvalid) {
+    this.invalidTokens = isInvalid ? (this.invalidTokens + 1) : 0;
 }
-IpWatch.prototype.MethodCallSucceeded = function() {
-    if (! this.isWhitelisted)
-    {
-        this.methodCallFailCount = 0;
-    }
-}
-IpWatch.prototype.getAttempts = function() {
-    return this.attempts;
-}
-IpWatch.prototype.incrementAttempts = function() {
-    this.attempts++;
+IpWatch.prototype.MethodCall = function() {
+    this.methodCalls++;
 }
 IpWatch.prototype.PublicCall = function() {
-    if (! this.isWhitelisted)
-    {
-        this.publicCalls++;
-    }
+    this.publicCalls++;
+}
+IpWatch.prototype.GetAttempts = function() {
+    return this.attempts;
+}
+IpWatch.prototype.GetLatestAttemptTime = function() {
+    return this.latestAttemptTime;
+}
+IpWatch.prototype.IncrementAttempts = function() {
+    this.latestattempt = latestattempt;
+    this.attempts++;
+}
+IpWatch.prototype.GetPublicCallCount = function() {
+    return this.publicCalls;
+}
+IpWatch.prototype.GetMethodCallCount = function() {
+    return this.methodCalls;
 }
 IpWatch.prototype.Clear = function() {
     this.publicCalls = 0;
     this.methodCallFailCount = 0;
 }
-IpWatch.prototype.getLatestAttemptTime = function() {
-    return moment(this.latestattempt).toDate();
-}
-IpWatch.prototype.setLatestAttemptTime = function(latestattempt) {
-    this.latestattempt = latestattempt;
-}
-IpWatch.prototype.buildJSON = function(ip) {
+IpWatch.prototype.BuildJSON = function(ip) {
     return "\"" + ip + "\": " + JSON.stringify({
         isWhitelisted: this.isWhitelisted,
         publicCalls: this.publicCalls,
         methodCalls: this.methodCalls,
-        methodCallFailCount: this.methodCallFailCount,
-        latestattempt: moment(this.latestattempt).toDate()
+        invalidTokens: this.invalidTokens,
+        attempts: this.attempts,
+        latestAttemptTime: moment(this.latestAttemptTime).toDate(),
+        blockedUntilTime: moment(this.latestAttemptTime).add(5 * this.invalidTokens, 's').toDate()
     });
 }
 
