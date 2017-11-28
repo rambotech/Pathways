@@ -188,7 +188,7 @@ router.get('/pathway/stats/:pathwayId', function(req, res) {
 //     "maxPayloads": 50,
 //     "maxReferences": 10
 // }
-router.post('/pathway/create/:pathwayId', function(req, res) {
+router.get('/pathway/create/:pathwayId', function(req, res) {
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
@@ -215,10 +215,10 @@ router.post('/pathway/create/:pathwayId', function(req, res) {
     }
     var badParams = false;
     var pathwayId = req.params.pathwayId;
-    var readToken = req.body.readToken;
-    var writeToken = req.body.writeToken;
-    var maxPayloads = req.body.maxPayloads;
-    var maxReferences = req.body.maxReferences;
+    var readToken = req.query.readToken;
+    var writeToken = req.query.writeToken;
+    var maxPayloads = req.query.maxPayloads;
+    var maxReferences = req.query.maxReferences;
     badparams = ! readToken || ! writeToken || ! maxPayloads || ! maxReferences;
     if (badparams)
     {
@@ -228,10 +228,11 @@ router.post('/pathway/create/:pathwayId', function(req, res) {
         return;
     }
     PathwayList[pathwayId] = new Pathway(readToken, writeToken, maxPayloads, maxReferences);
-    var body = "{ " + PathwayList[pathwayId].BuildJSON(pathwayId) + "}";
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Length', body.length);
-    res.end(body);
+    res.end();
+    // var body = "{ " + PathwayList[pathwayId].BuildJSON(pathwayId) + "}";
+    // res.setHeader('Content-Type', 'application/json');
+    // res.setHeader('Content-Length', body.length);
+    // res.end(body);
 });
 
 router.get('/pathway/delete/:pathwayId', function(req, res) {
@@ -282,15 +283,15 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
         res.end();
         return;
     }
-    if (Object.keys(PathwayList[req.params.pathwayId].references).length > pathwayMaximumReferences)
+    if ((PathwayList[req.params.pathwayId].references ? Object.keys(PathwayList[req.params.pathwayId].references).length : 0) > pathwayMaximumReferences)
     {
         res.statusCode = 429
         res.statusMessage = "Too Many Requests";
         res.end();
         return;
     }
-        
-    PathwayList[req.params.pathwayId].references[req.params.referenceKey] = req.body;
+    PathwayList[req.params.pathwayId].references[req.params.referenceKey] = req.body || "";
+    res.end();
 });
 
 router.get('/pathway/:pathwayId/reference/get/:referenceKey', function(req, res) {
