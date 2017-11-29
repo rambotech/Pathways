@@ -160,7 +160,7 @@ router.get('/pathway/stats/:pathwayId', function(req, res) {
     }
     if (! PathwayList[req.params.pathwayId])
     {
-        res.statusCode = 404;
+        res.statusCode = 204;
         res.statusMessage = "Not Found";
         res.end();
         return;
@@ -247,7 +247,7 @@ router.get('/pathway/delete/:pathwayId', function(req, res) {
     }
     if (! PathwayList[req.params.pathwayId])
     {
-        res.statusCode = 404;
+        res.statusCode = 204;
         res.statusMessage = "Not Found";
         res.end();
         return;
@@ -290,7 +290,7 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
         res.end();
         return;
     }
-    PathwayList[req.params.pathwayId].references[req.params.referenceKey] = req.body || "";
+    PathwayList[req.params.pathwayId].SetReference(req.params.referenceKey, req.body || "");
     res.end();
 });
 
@@ -321,7 +321,7 @@ router.get('/pathway/:pathwayId/reference/get/:referenceKey', function(req, res)
         res.end();
         return;
     }
-    var body = PathwayList[req.params.pathwayId].references[req.params.referenceKey] || "";
+    var body = PathwayList[req.params.pathwayId].GetReference(req.params.referenceKey, "");
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Length', body.length);
     res.end(body);
@@ -354,7 +354,7 @@ router.get('/pathway/:pathwayId/reference/delete/:referenceKey', function(req, r
         res.end();
         return;
     }
-    delete PathwayList[req.params.pathwayId].references[req.params.referenceKey];
+    PathwayList[req.params.pathwayId].DeleteReference(req.params.referenceKey);
     res.end(body);
 });
 
