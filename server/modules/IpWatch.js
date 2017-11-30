@@ -1,18 +1,21 @@
 var moment = require("moment");
 
 var whitelisted = false;
+var attempts = 0;
+var latestAttemptTime = moment("19000101");
 var methodCalls = 0;
 var publicCalls = 0;
 var invalidTokens = 0;
-var attempts = 0;
-var latestAttemptTime = 1;
 
 var IpWatch = function (isWhitelisted, attempts, latestattempttime) 
 {
     this.whitelisted = isWhitelisted;
     this.attempts = 0;
     this.latestAttemptTime = latestattempttime;
-}
+    this.methodCalls = 0;
+    this.publicCalls = 0;
+    this.invalidTokens = 0;
+    }
 IpWatch.prototype.IsWhitelisted = function () {
     return this.whitelisted;
 }
@@ -35,7 +38,7 @@ IpWatch.prototype.GetLatestAttemptTime = function() {
     return this.latestAttemptTime;
 }
 IpWatch.prototype.IncrementAttempts = function() {
-    this.latestattempt = latestattempt;
+    this.latestattempt = moment();
     this.attempts++;
 }
 IpWatch.prototype.GetPublicCallCount = function() {
@@ -55,8 +58,8 @@ IpWatch.prototype.BuildJSON = function(ip) {
         methodCalls: this.methodCalls,
         invalidTokens: this.invalidTokens,
         attempts: this.attempts,
-        latestAttemptTime: moment(this.latestAttemptTime).toDate(),
-        blockedUntilTime: moment(this.latestAttemptTime).add(5 * this.invalidTokens, 's').toDate()
+        latestAttemptTime: moment(this.latestAttemptTime).format("YYYY MMM DD (ddd), h:mm:ss a"),
+        blockedUntilTime: moment(this.latestAttemptTime).add(5 * this.invalidTokens, 's').format("YYYY MMM DD (ddd), h:mm:ss a")
     });
 }
 

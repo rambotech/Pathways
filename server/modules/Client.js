@@ -1,6 +1,8 @@
 var moment     = require("moment");
 
 var isWhitelisted = false;
+var attempts = 0;
+var latestattempt = Date.now();
 var readtally = 0;
 var lastread = 1;
 var writetally = 1;
@@ -11,6 +13,10 @@ var Client = function (isWhitelisted)
     this.isWhitelisted = isWhitelisted;
     this.attempts = 0;
     this.latestattempt = latestattempt;
+    this.readtally = 0;
+    this.lastread = 1;
+    this.writetally = 1;
+    this.lastwrite = 1;
 }
 Client.prototype.isWhitelisted =function () {
     return this.isWhitelisted;

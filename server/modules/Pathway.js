@@ -1,6 +1,4 @@
 var moment  = require("moment");
-var queuejs = require("queuejs");
-var dict    = require("dict");
 
 var readtoken = readtoken;
 var writetoken = writetoken;
@@ -9,12 +7,12 @@ var maxReferences = 10;
 var readsize = 0;
 var readtally = 0;
 var writesize = 0;
-var writetallly = 0;
-var payloads = new queuejs();
-var references = new dict();
-var lastread = Date.now;
-var lastwrite = Date.now;
-var started = Date.now;
+var writetally = 0;
+var payloads = [ ];
+var references = { };
+var lastread = moment("19000101");
+var lastwrite = moment("19000101");
+var started = moment();
 
 var Pathway = function (readtoken, writetoken, maxPayloads, maxReferences) {
     this.readtoken = readtoken;
@@ -24,7 +22,12 @@ var Pathway = function (readtoken, writetoken, maxPayloads, maxReferences) {
     this.readsize = 0;
     this.writesize = 0;
     this.readtally = 0;
-    this.writetallly = 0;
+    this.writetally = 0;
+    this.payloads = [ ];
+    this.references = { };
+    this.lastread = moment("19000101");
+    this.lastwrite = moment("19000101");
+    this.started = moment();
 }
 
 Pathway.prototype.GetReadToken = function() {
@@ -40,39 +43,45 @@ Pathway.prototype.GetWriteTally = function() {
     return this.readtally;
 }
 Pathway.prototype.GetReadSize = function() {
-    return this.writesize;
+    return this.readsize;
 }
 Pathway.prototype.GetWriteSize = function() {
-    return this.readsize;
+    return this.writesize;
 }
 Pathway.prototype.GetReferenceCount = function() {
     return this.references ? Object.keys(this.references).length : 0;
 }
 Pathway.prototype.GetPayloadCount = function() {
-    return this.payloads.size();
+    return this.payloads.length;
 }
 Pathway.prototype.ReadPayload = function() {
-    if (this.payloads.size() == 0)
+    if (this.payloads.length == 0)
     {
         return null;
     }
+    var payload = this.payloads.shift();
+    this.readsize += payload.length;
     this.readtally++;
-    this.readsize += this.payloads.peek().length;
-    return this.payloads.deq();
+    this.lastread = moment();
+    return payload;
 }
 Pathway.prototype.WritePayload = function(payload) {
-    this.payloads.enq(payload);
-    this.writetallly++;
+    this.payloads.push(payload);
+    this.writetally++;
     this.writesize += payload.length;
+    this.lastwrite = moment();
 }
 Pathway.prototype.GetReference = function(key, defaultValue) {
-    return this.references.has(key) ? this.references.get(key) : defaultValue;
+    return key in this.references ? JSON.stringify(this.references[key]) : defaultValue;
 }
 Pathway.prototype.SetReference = function(key, value) {
-    this.references.set(key, value);
+    this.references[key] = value;
 }
 Pathway.prototype.DeleteReference = function(key) {
-    this.references.delete(key);
+    if (key in this.references)
+    {
+        delete this.references[key];
+    }
 }
 Pathway.prototype.BuildJSON = function(id) {
     return "\"" + id + "\": " + JSON.stringify({
@@ -84,9 +93,9 @@ Pathway.prototype.BuildJSON = function(id) {
         maxPayloads: this.maxPayloads,
         referencesAvailable: (this.references ? Object.keys(this.references).length : 0),
         maxReferences: this.maxReferences,
-        lastread: moment(this.lastread).toDate(),
-        lastwrite: moment(this.lastwrite).toDate(),
-        started: moment(this.started).toDate()
+        lastread: moment(this.lastread).format("YYYY MMM DD (ddd), h:mm:ss a"),
+        lastwrite: moment(this.lastwrite).format("YYYY MMM DD (ddd), h:mm:ss a"),
+        started: moment(this.started).format("YYYY MMM DD (ddd), h:mm:ss a")
     });
 };
   
