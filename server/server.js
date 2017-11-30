@@ -11,7 +11,7 @@ var bodyParser = require("body-parser");
 var dict       = require("dict");
 var fs         = require("fs");
 var moment     = require("moment");
-
+var regex      = require("regex");
 var Pathway    = require("./modules/Pathway.js");
 var IpWatch    = require("./modules/IpWatch.js");
 
@@ -81,6 +81,28 @@ function IsInWhitelist (ip)
         }
     }
     return result;
+}
+
+function ValidateId(id)
+{
+    var isValid = true;
+    for (var index = 0; isValid && index < id.length; index++)
+    {
+        var thisChar = id[index]; // id.substring(index,index);
+        switch (index)
+        {
+            case 0: 
+                isValid = (thisChar >= "A" && thisChar <= "Z") || (thisChar >= "a" && thisChar <= "z");
+                break;
+
+            default:
+                isValid =
+                    thisChar == "_" || thisChar == "-" || (thisChar >= "A" && thisChar <= "Z") || 
+                    (thisChar >= "a" && thisChar <= "z") || (thisChar >= "0" && thisChar <= "9");
+                break;
+        }
+    }
+    return isValid;
 }
 
 // test route to make sure everything is working (accessed at GET http://{server}/api)
@@ -199,6 +221,13 @@ router.get('/pathway/create/:pathwayId', function(req, res) {
         res.end();
         return;
     }
+    if (! ValidateId(req.params.pathwayId))
+    {
+        res.statusCode = 400;
+        res.statusMessage = "Invalid pathway name";
+        res.end();
+        return;
+    }
     if (Object.keys(PathwayList).length >= pathwayCountLimit)
     {
         res.statusCode = 429;
@@ -264,6 +293,13 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
+        res.end();
+        return;
+    }
+    if (! ValidateId(req.params.referenceKey))
+    {
+        res.statusCode = 400;
+        res.statusMessage = "Invalid reference name";
         res.end();
         return;
     }
@@ -411,6 +447,8 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
+    console.log("pathwayId: " + (req.params.pathwayId || "{missing}"));
+    console.log("PathwayList[req.params.pathwayId]: " + PathwayList[req.params.pathwayId])
     if (! PathwayList[req.params.pathwayId])
     {
         res.statusCode = 404;
@@ -427,7 +465,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (Object.keys(PathwayList[req.params.pathwayId].payloads).length >= PathwayList[req.params.pathwayId].maxPayloads)
+    if (PathwayList[req.params.pathwayId].GetPayloadCount() >= PathwayList[req.params.pathwayId].maxPayloads)
     {
         res.statusCode = 429
         res.statusMessage = "Too many requests";
