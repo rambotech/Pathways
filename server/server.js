@@ -439,7 +439,7 @@ router.get('/pathway/:pathwayId/reference/delete/:referenceKey', function(req, r
     }
     PathwayList[req.params.pathwayId].DeleteReference(req.params.referenceKey);
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
-    res.end(body);
+    res.end();
 });
 
 router.get('/pathway/:pathwayId/payload/read', function(req, res) {
