@@ -1,12 +1,5 @@
 var moment = require("moment");
 
-var whitelisted = false;
-var attempts = 0;
-var latestAttemptTime = moment("19000101");
-var methodCalls = 0;
-var publicCalls = 0;
-var invalidTokens = 0;
-
 var IpWatch = function (isWhitelisted, attempts, latestattempttime) 
 {
     this.whitelisted = isWhitelisted;

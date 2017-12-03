@@ -1,19 +1,5 @@
 var moment  = require("moment");
 
-var readtoken = readtoken;
-var writetoken = writetoken;
-var maxPayloads = 50;
-var maxReferences = 10;
-var readsize = 0;
-var readtally = 0;
-var writesize = 0;
-var writetally = 0;
-var payloads = [ ];
-var references = { };
-var lastread = moment("19000101");
-var lastwrite = moment("19000101");
-var started = moment();
-
 var Pathway = function (readtoken, writetoken, maxPayloads, maxReferences) {
     this.readtoken = readtoken;
     this.writetoken = writetoken;

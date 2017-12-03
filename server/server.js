@@ -14,6 +14,7 @@ var moment     = require("moment");
 var regex      = require("regex");
 var util       = require("util");
 // intra-project packages
+var Lockbox    = require('./modules/Lockbox.js');
 var Pathway    = require("./modules/Pathway.js");
 var IpWatch    = require("./modules/IpWatch.js");
 
@@ -480,12 +481,11 @@ router.get('/pathway/:pathwayId/payload/read', function(req, res) {
         res.end();
         return;
     }
-    var body = PathwayList[req.params.pathwayId].ReadPayload();
-    console.log("Inspect: " + util.inspect(body, false, null));
-    totalPayloadSize -= body.length;
+    var lockbox = PathwayList[req.params.pathwayId].ReadPayload();
+    totalPayloadSize -= lockbox.content.length;
     
-    res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Content-Length', body.length);
+    res.setHeader('Content-Type', lockbox.contentType);
+    res.setHeader('Content-Length', lockbox.content.length);
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end(body);
 });
@@ -548,7 +548,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         return;
     }
     console.log(req.body);
-    PathwayList[req.params.pathwayId].WritePayload(req.body);
+    PathwayList[req.params.pathwayId].WritePayload(new Lockbox(req.headers["content-type"], req.body));
     totalPayloadSize += req.body.length;
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();

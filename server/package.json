@@ -1,0 +1,15 @@
+{
+    "name": "Pathways",
+    "version": "0.0.1",
+    "description": "No-frills, volatile data pit stop between application instances.",
+    "keywords": ["restful", "api", ""],
+    "repository": "https://github.com/rambotech/Pathways.git",
+    "homepage": "",
+    "author": "John J Scultz",
+    "dependencies": {
+    },
+    "main": "server/server.js",
+    "engines": {
+        "node": ">= 0.4.1"
+    },
+}
