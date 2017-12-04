@@ -5,6 +5,7 @@
 
 // call the packages we need
 var express    = require("express");        // call express
+
 var https      = require("https");
 var app        = express();                 // define our app using express
 var bodyParser = require("body-parser");
@@ -359,9 +360,7 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
         res.end();
         return;
     }
-    console.log(req.params.referenceKey);
-    console.log(req.body);
-    PathwayList[req.params.pathwayId].SetReference(req.params.referenceKey, req.body || "");
+    PathwayList[req.params.pathwayId].SetReference(req.params.referenceKey, req.Body || "");
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();
 });
@@ -504,7 +503,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         return;
     }
     LogDebug("pathwayId: " + (req.params.pathwayId || "{missing}"));
-    LogDebug("PathwayList[req.params.pathwayId]: " + PathwayList[req.params.pathwayId])
+    LogTrace("PathwayList[req.params.pathwayId]: " + PathwayList[req.params.pathwayId])
     if (! PathwayList[req.params.pathwayId])
     {
         res.statusCode = 404;
@@ -531,7 +530,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (req.body.length > payloadSizeLimit)
+    if (req.bodyRaw.length > payloadSizeLimit)
     {
         res.statusCode = 409
         res.statusMessage = "Payload over maximum size limit";
@@ -539,7 +538,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (totalPayloadSize + req.body.length > totalPayloadSizeLimit)
+    if (totalPayloadSize + req.bodyRaw.length > totalPayloadSizeLimit)
     {
         res.statusCode = 409
         res.statusMessage = "Payload exceeds total maximum payloads size cap";
@@ -547,9 +546,9 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    console.log(req.body);
-    PathwayList[req.params.pathwayId].WritePayload(new Lockbox(req.headers["content-type"], req.body));
-    totalPayloadSize += req.body.length;
+    LogTrace("req.Body: " + req.Body);
+    PathwayList[req.params.pathwayId].WritePayload(new Lockbox(req.headers["content-type"], req.Body));
+    totalPayloadSize += req.Body.length;
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();
 });
@@ -683,10 +682,7 @@ router.get('/admin/reset', function(req, res) {
 });
 
 // Middleware 1: jailed IP check
-// Middleware 2: post size violation check
-// Middleware 3: access-token validation
-// Body Parser for urlencoded
-// Body Parser for JSON
+// Middleware 2+: handles for the body content
 // API routes (prefixed with /api)
 app.use(function(req, res, next) {
     LogDebug(moment(Date.now()).toDate() +" :: Connection from " + req.ip);
@@ -716,8 +712,8 @@ app.use(function(req, res, next) {
     }
     next();
 })
-.use(bodyParser.urlencoded({ extended: true }))
-.use(bodyParser.json())
+.use(bodyParser.urlencoded({ extended: false }))
+.use(bodyParser.text({ type: 'text/html' }))
 .use('/api', router);
 
 // OVERRIDES from the command line, if any.
