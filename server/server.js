@@ -360,7 +360,11 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
         res.end();
         return;
     }
-    PathwayList[req.params.pathwayId].SetReference(req.params.referenceKey, new Lockbox(req.contentType, req.Body || ""));
+    var content = req.body;
+    var contentType = req.contentType || req.headers["content-type"];
+    LogTrace("content: " + content);
+    LogTrace("contentType: " + contentType);
+    PathwayList[req.params.pathwayId].SetReference(req.params.referenceKey, new Lockbox(contentType, content));
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();
 });
@@ -397,15 +401,13 @@ router.get('/pathway/:pathwayId/reference/get/:referenceKey', function(req, res)
         return;
     }
     var lockbox = PathwayList[req.params.pathwayId].GetReference(req.params.referenceKey, "");
-    totalPayloadSize -= lockbox.content.length;
-    
-    var body = PathwayList[req.params.pathwayId].GetReference(req.params.referenceKey, "");
-    console.log("Inspect: " + util.inspect(body, false, null));
-    LogTrace("body: " + body);
+    LogTrace("reference read: " + JSON.stringify(lockbox));
+    var content = lockbox.GetContent();
+    var contentType = lockbox.GetContentType();
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Length', content.length);
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
-    res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Content-Length', body.length);
-    res.end(body);
+    res.end(content);
 });
 
 router.get('/pathway/:pathwayId/reference/delete/:referenceKey', function(req, res) {
@@ -485,11 +487,13 @@ router.get('/pathway/:pathwayId/payload/read', function(req, res) {
     }
     var lockbox = PathwayList[req.params.pathwayId].ReadPayload();
     LogTrace("payload read: " + JSON.stringify(lockbox));
-    totalPayloadSize -= lockbox.GetContent().length;
-    res.setHeader('Content-Type', lockbox.GetContentType());
-    res.setHeader('Content-Length', lockbox.GetContent().length);
+    var content = lockbox.GetContent();
+    var contentType = lockbox.GetContentType();
+    totalPayloadSize -= content.length;
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Length', content.length);
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
-    res.end(body);
+    res.end(content);
 });
 
 router.post('/pathway/:pathwayId/payload/write', function(req, res) {
@@ -549,12 +553,12 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    var body = req.body;
+    var content = req.body;
     var contentType = req.contentType || req.headers["content-type"];
-    LogTrace("req.body: " + body);
-    LogTrace("req.contentType: " + contentType);
-    PathwayList[req.params.pathwayId].WritePayload(new Lockbox(req.contentType, body | ""));
-    totalPayloadSize += body.length;
+    LogTrace("content: " + content);
+    LogTrace("contentType: " + contentType);
+    PathwayList[req.params.pathwayId].WritePayload(new Lockbox(contentType, content));
+    totalPayloadSize += content.length;
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();
 });
