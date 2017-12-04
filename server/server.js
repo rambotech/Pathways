@@ -360,7 +360,7 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
         res.end();
         return;
     }
-    PathwayList[req.params.pathwayId].SetReference(req.params.referenceKey, req.Body || "");
+    PathwayList[req.params.pathwayId].SetReference(req.params.referenceKey, new Lockbox(req.contentType, req.Body || ""));
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();
 });
@@ -396,6 +396,9 @@ router.get('/pathway/:pathwayId/reference/get/:referenceKey', function(req, res)
         res.end();
         return;
     }
+    var lockbox = PathwayList[req.params.pathwayId].GetReference(req.params.referenceKey, "");
+    totalPayloadSize -= lockbox.content.length;
+    
     var body = PathwayList[req.params.pathwayId].GetReference(req.params.referenceKey, "");
     console.log("Inspect: " + util.inspect(body, false, null));
     LogTrace("body: " + body);
@@ -481,10 +484,10 @@ router.get('/pathway/:pathwayId/payload/read', function(req, res) {
         return;
     }
     var lockbox = PathwayList[req.params.pathwayId].ReadPayload();
-    totalPayloadSize -= lockbox.content.length;
-    
-    res.setHeader('Content-Type', lockbox.contentType);
-    res.setHeader('Content-Length', lockbox.content.length);
+    LogTrace("payload read: " + JSON.stringify(lockbox));
+    totalPayloadSize -= lockbox.GetContent().length;
+    res.setHeader('Content-Type', lockbox.GetContentType());
+    res.setHeader('Content-Length', lockbox.GetContent().length);
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end(body);
 });
@@ -522,7 +525,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (PathwayList[req.params.pathwayId].GetPayloadCount() >= PathwayList[req.params.pathwayId].maxPayloads)
+    if (! PathwayList[req.params.pathwayId].CanAddPayload())
     {
         res.statusCode = 429
         res.statusMessage = "Too many requests";
@@ -530,7 +533,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (req.bodyRaw.length > payloadSizeLimit)
+    if (req.body.length > payloadSizeLimit)
     {
         res.statusCode = 409
         res.statusMessage = "Payload over maximum size limit";
@@ -538,17 +541,20 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (totalPayloadSize + req.bodyRaw.length > totalPayloadSizeLimit)
+    if (totalPayloadSize + req.body.length > totalPayloadSizeLimit)
     {
         res.statusCode = 409
-        res.statusMessage = "Payload exceeds total maximum payloads size cap";
+        res.statusMessage = "Payload exceeds total maximum size cap on all payloads for all pathways";
         LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
         res.end();
         return;
     }
-    LogTrace("req.Body: " + req.Body);
-    PathwayList[req.params.pathwayId].WritePayload(new Lockbox(req.headers["content-type"], req.Body));
-    totalPayloadSize += req.Body.length;
+    var body = req.body;
+    var contentType = req.contentType || req.headers["content-type"];
+    LogTrace("req.body: " + body);
+    LogTrace("req.contentType: " + contentType);
+    PathwayList[req.params.pathwayId].WritePayload(new Lockbox(req.contentType, body | ""));
+    totalPayloadSize += body.length;
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();
 });
@@ -713,7 +719,8 @@ app.use(function(req, res, next) {
     next();
 })
 .use(bodyParser.urlencoded({ extended: false }))
-.use(bodyParser.text({ type: 'text/html' }))
+.use(bodyParser.text({ type: 'text/plain' }))
+.use(bodyParser.json({ type: 'application/*+json' }))
 .use('/api', router);
 
 // OVERRIDES from the command line, if any.

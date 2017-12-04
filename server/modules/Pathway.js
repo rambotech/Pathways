@@ -40,13 +40,16 @@ Pathway.prototype.GetReferenceCount = function() {
 Pathway.prototype.GetPayloadCount = function() {
     return this.payloads.length;
 }
+Pathway.prototype.CanAddPayload = function(key) {
+    return this.payloads.length <= this.maxPayloads;
+}
 Pathway.prototype.ReadPayload = function() {
     if (this.payloads.length == 0)
     {
         return null;
     }
     var payload = this.payloads.shift();
-    this.readsize += payload.length;
+    this.readsize += payload.content.length;
     this.readtally++;
     this.lastread = moment();
     return payload;
@@ -54,11 +57,14 @@ Pathway.prototype.ReadPayload = function() {
 Pathway.prototype.WritePayload = function(payload) {
     this.payloads.push(payload);
     this.writetally++;
-    this.writesize += payload.length;
+    this.writesize += payload.content.length;
     this.lastwrite = moment();
 }
+Pathway.prototype.CanAddReference = function(key) {
+    return ((key in this.references) ? this.references.length : this.references.length + 1) <= maxReferences;
+}
 Pathway.prototype.GetReference = function(key, defaultValue) {
-    return key in this.references ? JSON.stringify(this.references[key]) : defaultValue;
+    return key in this.references ? this.references[key] : defaultValue;
 }
 Pathway.prototype.SetReference = function(key, value) {
     this.references[key] = value;
