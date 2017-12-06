@@ -14,7 +14,8 @@ var fs         = require("fs");
 var moment     = require("moment");
 var regex      = require("regex");
 var util       = require("util");
-// intra-project packages
+
+// intra-project
 var Lockbox    = require('./modules/Lockbox.js');
 var Pathway    = require("./modules/Pathway.js");
 var IpWatch    = require("./modules/IpWatch.js");
