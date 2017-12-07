@@ -19,18 +19,11 @@ var util       = require("util");
 var Lockbox    = require('./modules/Lockbox.js');
 var Pathway    = require("./modules/Pathway.js");
 var IpWatch    = require("./modules/IpWatch.js");
+var Settings   = require("./modules/Settings.js");
 
 // settings, which can also be overridden via the command line args
-var adminAccessToken   = "b273ec13-13b7-4b65-a2af-bf9c71d0b422";  // change this default on the command line
-var userAccessToken    = "a91a843b-a800-4af5-9d78-510cfe8fe4b0";  // change this default on the command line
-var httpPortNumber = process.env.PORT || 5670;
-var httpsPortNumber = (process.env.PORT + 1) || 5671;
-var payloadSizeLimit =  2 * 1024 * 1024;
-var pathwayMaximumPayloads = 50;
-var pathwayMaximumReferences = 10;
-var pathwayCountLimit = 20;
-var totalPayloadSizeLimit = (400 * 1024 * 1024);
-var loggingLevel = 0;
+
+var settings = new Settings();
 
 /////////////////////////////////////////
 // Locals
@@ -52,16 +45,16 @@ var router = express.Router();              // get an instance of the express Ro
 
 function ValidateAccessToken (ip, tokenValue)
 {
-    var result = tokenValue == adminAccessToken ? 2 : (tokenValue == userAccessToken ? 1 : 0);
+    var result = tokenValue == settings.adminAccessToken ? 2 : (tokenValue == settings.userAccessToken ? 1 : 0);
     IpWatchlist[ip].InvalidToken(result == 0);
     return result;
 }
 
-function LogTrace (message) { if (loggingLevel == 0) console.log(message); }
-function LogDebug (message) { if (loggingLevel <= 1) console.log(message); }
-function LogInfo (message) { if (loggingLevel <= 2) console.log(message); }
-function LogWarning (message) { if (loggingLevel <= 3) console.log(message); }
-function LogError (message) { if (loggingLevel <= 4) console.log(message); }
+function LogTrace (message) { if (settings.loggingLevel == 0) console.log(message); }
+function LogDebug (message) { if (settings.loggingLevel <= 1) console.log(message); }
+function LogInfo (message) { if (settings.loggingLevel <= 2) console.log(message); }
+function LogWarning (message) { if (settings.loggingLevel <= 3) console.log(message); }
+function LogError (message) { if (settings.loggingLevel <= 4) console.log(message); }
 
 function ValidatePathwayToken(pathwayId, token)
 {
@@ -124,7 +117,7 @@ router.get('/', function(req, res) {
     var body = 
         "<html><head><title>Pathways RestAPI Server</title></head>" +
         "<p>This is a no-frills drop-off and pickup location for data packets between applications</p>" +
-        "<p>Pathways RestAPI Server is open-source, written in express. Visit <a target='_blank' href='https://github.com/rambotech/DropShip'>this repository on GitHub</a> for more information.</p>" +
+        "<p>Pathways RestAPI Server is open-source, written in express. Visit <a target='_blank' href='https://github.com/rambotech/Pathways'>this repository on GitHub</a> for more information.</p>" +
         "</body></html>";
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.setHeader('Content-Type', 'text/html');
@@ -254,7 +247,7 @@ router.get('/pathway/create/:pathwayId', function(req, res) {
         res.end();
         return;
     }
-    if (Object.keys(PathwayList).length >= pathwayCountLimit)
+    if (Object.keys(PathwayList).length >= settings.pathwayCountLimit)
     {
         res.statusCode = 429;
         res.statusMessage = "Too many requests";
@@ -353,7 +346,7 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
         res.end();
         return;
     }
-    if ((PathwayList[req.params.pathwayId].references ? Object.keys(PathwayList[req.params.pathwayId].references).length : 0) > pathwayMaximumReferences)
+    if ((PathwayList[req.params.pathwayId].references ? Object.keys(PathwayList[req.params.pathwayId].references).length : 0) > settings.pathwayMaximumReferences)
     {
         res.statusCode = 429
         res.statusMessage = "Too Many Requests";
@@ -538,7 +531,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (req.body.length > payloadSizeLimit)
+    if (req.body.length > settings.payloadSizeLimit)
     {
         res.statusCode = 409
         res.statusMessage = "Payload over maximum size limit";
@@ -546,7 +539,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (totalPayloadSize + req.body.length > totalPayloadSizeLimit)
+    if (totalPayloadSize + req.body.length > settings.totalPayloadSizeLimit)
     {
         res.statusCode = 409
         res.statusMessage = "Payload exceeds total maximum size cap on all payloads for all pathways";
@@ -728,7 +721,7 @@ app.use(function(req, res, next) {
 .use(bodyParser.json({ type: 'application/*+json' }))
 .use('/api', router);
 
-// OVERRIDES from the command line, if any.
+// command line parsing //
 var target = "";
 IpWatchlist["127.0.0.1"] = new IpWatch(true, 0, Date.now());
 IpWatchlist["::1"] = new IpWatch(true, 0, Date.now());
@@ -740,20 +733,22 @@ process.argv.forEach(function(element) {
     }
     else
     {
-        if (target == "adminAccessToken") adminAccessToken = element;
-        if (target == "userAccessToken") userAccessToken = element;
-        if (target == "httpPortNumber") httpPortNumber = (1 * element);
-        if (target == "httpsPortNumber") httpsPortNumber = (1 * element);
-        if (target == "payloadSizeLimit") payloadSizeLimit = (1 * element);
-        if (target == "pathwayMaximumPayloads") pathwayMaximumPayloads = (1 * element);
-        if (target == "totalPayloadSizeLimit") totalPayloadSizeLimit = (1 * element);
+        if (target == "publicName") settings.publicName = element;
+        if (target == "settingsFile") settings.LoadConfigurationFile(element);
+        if (target == "adminAccessToken") settings.adminAccessToken = element;
+        if (target == "userAccessToken") settings.userAccessToken = element;
+        if (target == "httpPortNumber") settings.httpPortNumber = (1 * element);
+        if (target == "httpsPortNumber") settings.httpsPortNumber = (1 * element);
+        if (target == "payloadSizeLimit") settings.payloadSizeLimit = (1 * element);
+        if (target == "pathwayMaximumPayloads") settings.pathwayMaximumPayloads = (1 * element);
+        if (target == "totalPayloadSizeLimit") settings.totalPayloadSizeLimit = (1 * element);
         if (target == "loggingLevel") 
         {
-            loggingLevel = (1 * element);
-            if (loggingLevel < 0 || loggingLevel > 4)
+            settings.loggingLevel = (1 * element);
+            if (settings.loggingLevel < 0 || settings.loggingLevel > 4)
             {
-                loggingLevel = 2;
-                console.log("Warning: loggingLevel is invalid (i.e. not 0 <= x <= 4).  Using default of 2 (Info)");
+                settings.loggingLevel = 2;
+                console.log("Warning: settings.loggingLevel is invalid (i.e. not 0 <= x <= 4).  Using default of 2 (Info)");
             }
         }
         if (target == "ipWhitelist")
@@ -767,22 +762,22 @@ process.argv.forEach(function(element) {
     }
 }, this);
 
-console.log('Magic happens on port ' + httpPortNumber + " (http) and " + httpsPortNumber + " (https)");
+console.log('Magic happens on port ' + settings.httpPortNumber + " (http) and " + settings.httpsPortNumber + " (https)");
 console.log('IP client whitelist addresses:');
 for (var key in IpWatchlist)
 {
     console.log('... ' + key);
 }
-console.log('adminAccessToken: ' + adminAccessToken);
-console.log('userAccessToken: ' + userAccessToken);
-console.log('payloadSizeLimit: ' + payloadSizeLimit);
-console.log('pathwayMaximumPayloads: ' + pathwayMaximumPayloads);
-console.log('pathwayCountLimit: ' + pathwayCountLimit);
-console.log('totalPayloadSizeLimit: ' + totalPayloadSizeLimit);
-console.log('loggingLevel: ' + loggingLevel);
+console.log('settings.adminAccessToken: ' + settings.adminAccessToken);
+console.log('settings.userAccessToken: ' + settings.userAccessToken);
+console.log('settings.payloadSizeLimit: ' + settings.payloadSizeLimit);
+console.log('settings.pathwayMaximumPayloads: ' + settings.pathwayMaximumPayloads);
+console.log('settings.pathwayCountLimit: ' + settings.pathwayCountLimit);
+console.log('settings.totalPayloadSizeLimit: ' + settings.totalPayloadSizeLimit);
+console.log('settings.loggingLevel: ' + settings.loggingLevel);
 // START THE SERVER
 // =============================================================================
-app.listen(httpPortNumber);
-https.createServer(httpsOptions, app).listen(httpsPortNumber);
+app.listen(settings.httpPortNumber);
+https.createServer(httpsOptions, app).listen(settings.httpsPortNumber);
 console.log("Pathways server is now running and accepting connections.");
 console.log("==================================================================");

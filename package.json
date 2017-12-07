@@ -1,5 +1,5 @@
 {
-    "name": "Pathways",
+    "name": "pathways",
     "version": "0.0.1",
     "description": "No-frills, volatile data pit stop between application instances.",
     "keywords": ["restful", "api", ""],
@@ -12,7 +12,8 @@
        "body-parser": ">= 1.18.2",
        "dict": ">= 1.4.0",
        "moment": ">= 2.19.3",
-       "regex": ">= 0.1.1"
+       "regex": ">= 0.1.1",
+       "fs": ">= 0.0.1"
     },
     "main": "server/server.js",
     "engines": {
