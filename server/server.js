@@ -218,14 +218,12 @@ router.get('/pathway/stats/:pathwayId', function(req, res) {
     res.end(body);
 });
 
-// Creates a new pathway, or recycles a deleted one ... requires user or admin access, and a JSON body argument
-// 
-// {
-//     "readToken": "the key for reading",
-//     "writeToken": "the key for reading",
-//     "maxPayloads": 50,
-//     "maxReferences": 10
-// }
+// Creates a new pathway, or recycles a deleted one ... requires admin access, and these query arguments
+//   readToken: the key for reading
+//   writeToken: the key for reading
+//   maxPayloads: the cap on payloads waiting for pickup
+//   maxReferences: the cap on reference objects
+
 router.get('/pathway/create/:pathwayId', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /pathway/create/:pathwayId )")
     IpWatchlist[req.ip].MethodCall();
@@ -267,8 +265,8 @@ router.get('/pathway/create/:pathwayId', function(req, res) {
     var pathwayId = req.params.pathwayId;
     var readToken = req.query.readToken;
     var writeToken = req.query.writeToken;
-    var maxPayloads = req.query.maxPayloads;
-    var maxReferences = req.query.maxReferences;
+    var maxPayloads = parseInt(req.query.maxPayloads, 10);
+    var maxReferences = parseInt(req.query.maxReferences, 10);
     badparams = ! readToken || ! writeToken || ! maxPayloads || ! maxReferences;
     if (badparams)
     {
@@ -346,7 +344,8 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
         res.end();
         return;
     }
-    if ((PathwayList[req.params.pathwayId].references ? Object.keys(PathwayList[req.params.pathwayId].references).length : 0) > settings.pathwayMaximumReferences)
+    var thisReferences = PathwayList[req.params.pathwayId].references;
+    if ((thisReferences ? Object.keys(thisReferences).length : 0) > settings.pathwayMaximumReferences)
     {
         res.statusCode = 429
         res.statusMessage = "Too Many Requests";
@@ -479,7 +478,7 @@ router.get('/pathway/:pathwayId/payload/read', function(req, res) {
         res.end();
         return;
     }
-    if (PathwayList[req.params.pathwayId].GetPayloadCount() == 0)
+    if (PathwayList[req.params.pathwayId].payloads.length == 0)
     {
         res.statusCode = 204;
         res.statusMessage = "No Content";
@@ -513,7 +512,8 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
     }
     LogDebug("pathwayId: " + (req.params.pathwayId || "{missing}"));
     LogTrace("PathwayList[req.params.pathwayId]: " + PathwayList[req.params.pathwayId])
-    if (! PathwayList[req.params.pathwayId])
+    var thisPayload = PathwayList[req.params.pathwayId];
+    if (! thisPayload)
     {
         res.statusCode = 404;
         res.statusMessage = " Not Found";
@@ -531,7 +531,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
         res.end();
         return;
     }
-    if (! PathwayList[req.params.pathwayId].CanAddPayload())
+    if (thisPayload.payloads.length >= thisPayload.maxPayloads)
     {
         res.statusCode = 429
         res.statusMessage = "Too many requests";
@@ -559,7 +559,7 @@ router.post('/pathway/:pathwayId/payload/write', function(req, res) {
     var contentType = req.contentType || req.headers["content-type"];
     LogTrace("content: " + content);
     LogTrace("contentType: " + contentType);
-    PathwayList[req.params.pathwayId].WritePayload(new Lockbox(contentType, content));
+    thisPayload.WritePayload(new Lockbox(contentType, content));
     totalPayloadSize += content.length;
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();

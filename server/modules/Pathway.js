@@ -40,9 +40,6 @@ Pathway.prototype.GetReferenceCount = function() {
 Pathway.prototype.GetPayloadCount = function() {
     return this.payloads.length;
 }
-Pathway.prototype.CanAddPayload = function(key) {
-    return this.payloads.length <= this.maxPayloads;
-}
 Pathway.prototype.ReadPayload = function() {
     if (this.payloads.length == 0)
     {
@@ -85,9 +82,9 @@ Pathway.prototype.BuildJSON = function(id) {
         maxPayloads: this.maxPayloads,
         referencesAvailable: (this.references ? Object.keys(this.references).length : 0),
         maxReferences: this.maxReferences,
-        lastread: moment(this.lastread).format("YYYY MMM DD (ddd), h:mm:ss a"),
-        lastwrite: moment(this.lastwrite).format("YYYY MMM DD (ddd), h:mm:ss a"),
-        started: moment(this.started).format("YYYY MMM DD (ddd), h:mm:ss a")
+        lastread: moment(this.lastread).format("YYYY-MM-DDTHH:mm:ss"),
+        lastwrite: moment(this.lastwrite).format("YYYY-MM-DDTHH:mm:ss"),
+        started: moment(this.started).format("YYYY-MM-DDTHH:mm:ss")
     });
 };
   

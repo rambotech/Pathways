@@ -20,7 +20,7 @@ Settings.prototype.LoadConfigurationFile = function(settingsFile)
 	if (!fs.existsSync(settingsFile))
 	{
         console.log("Unable to find configuration file: " + settingsFile);
-        return false;
+        process.exit(2);
 	}
     try
     {
