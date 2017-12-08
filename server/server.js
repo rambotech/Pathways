@@ -395,6 +395,14 @@ router.get('/pathway/:pathwayId/reference/get/:referenceKey', function(req, res)
         return;
     }
     var lockbox = PathwayList[req.params.pathwayId].GetReference(req.params.referenceKey, "");
+    if (! lockbox)
+    {
+        res.statusCode = 204;
+        res.statusMessage = " Not Found";
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        res.end();
+        return;
+    }
     LogTrace("reference read: " + JSON.stringify(lockbox));
     var content = lockbox.GetContent();
     var contentType = lockbox.GetContentType();
@@ -734,7 +742,11 @@ process.argv.forEach(function(element) {
     else
     {
         if (target == "publicName") settings.publicName = element;
-        if (target == "settingsFile") settings.LoadConfigurationFile(element);
+        if (target == "settingsFile")
+        {
+            settings.LoadConfigurationFile(element);
+            console.log("reading from file");
+        }
         if (target == "adminAccessToken") settings.adminAccessToken = element;
         if (target == "userAccessToken") settings.userAccessToken = element;
         if (target == "httpPortNumber") settings.httpPortNumber = (1 * element);
@@ -768,13 +780,14 @@ for (var key in IpWatchlist)
 {
     console.log('... ' + key);
 }
-console.log('settings.adminAccessToken: ' + settings.adminAccessToken);
-console.log('settings.userAccessToken: ' + settings.userAccessToken);
-console.log('settings.payloadSizeLimit: ' + settings.payloadSizeLimit);
-console.log('settings.pathwayMaximumPayloads: ' + settings.pathwayMaximumPayloads);
-console.log('settings.pathwayCountLimit: ' + settings.pathwayCountLimit);
-console.log('settings.totalPayloadSizeLimit: ' + settings.totalPayloadSizeLimit);
-console.log('settings.loggingLevel: ' + settings.loggingLevel);
+console.log('adminAccessToken: ' + settings.adminAccessToken);
+console.log('userAccessToken: ' + settings.userAccessToken);
+console.log('payloadSizeLimit: ' + settings.payloadSizeLimit);
+console.log('pathwayMaximumPayloads: ' + settings.pathwayMaximumPayloads);
+console.log('pathwayCountLimit: ' + settings.pathwayCountLimit);
+console.log('totalPayloadSizeLimit: ' + settings.totalPayloadSizeLimit);
+console.log('loggingLevel: ' + settings.loggingLevel);
+
 // START THE SERVER
 // =============================================================================
 app.listen(settings.httpPortNumber);

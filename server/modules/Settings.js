@@ -3,8 +3,8 @@ var fs  = require("fs");
 var Settings = function () 
 {
     this.publicName = "Default";
-    this.adminAccessToken = "";
-    this.userAccessToken = "";
+    this.adminAccessToken = "36a1a42f-079b-4bde-8660-10b101465f22";
+    this.userAccessToken = "9bcc39ce-0b6f-418f-9dbf-b7653d391cb1";
     this.httpPortNumber = 5670;
     this.httpsPortNumber = 5671;
     this.payloadSizeLimit = 524288;
@@ -50,6 +50,5 @@ Settings.prototype.LoadConfigurationFile = function(settingsFile)
     }
     return true;
 }
-
 
 module.exports = Settings;
