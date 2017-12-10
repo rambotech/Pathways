@@ -1,4 +1,4 @@
 cd server
-node server.js --settingsFile test.config
+nodejs server.js --settingsFile test.config
 cd ..
 
