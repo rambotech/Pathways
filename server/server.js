@@ -682,7 +682,7 @@ router.get('/admin/reset', function(req, res) {
     IpWatchlist = { };
     for (var ip in whiteListIPs)
     {
-        IpWatchlist[ip] = new IpWatch(true, 0, Date.now);
+        IpWatchlist[ip] = new IpWatch(true, 0);
     }
     totalPayloadSize = (0 * 1);
     
@@ -701,14 +701,16 @@ app.use(function(req, res, next) {
     if (! IpWatchlist[req.ip])
     {
         LogTrace("Adding new client IP Address: " + req.ip);
-        IpWatchlist[req.ip] = new IpWatch(false, 0, Date.now());
+        IpWatchlist[req.ip] = new IpWatch(false, 0);
     }
+    IpWatchlist[req.ip].latestAttemptTime = moment();
     var ipInfo = IpWatchlist[req.ip];
     if (! ipInfo.IsWhitelisted)
     {
         var accessToken = req.header("Access-Token") || "()";
-        if (ValidateAccessToken(req.ip, accessToken, false) != 2)
-        {    
+        if (ValidateAccessToken(req.ip, accessToken, false) == 0)
+        {
+            IpWatchlist[req.ip].attempts++; 
             if (moment(ipInfo.getLatestAttemptTime()).add(IpWatchlist[req.ip].MethodCallFailed * 5, 's') > Date.now())
             {
                 LogDebug("Rejecting jailed IP Address: " + req.ip);
@@ -721,6 +723,10 @@ app.use(function(req, res, next) {
                 return;
             }
         }
+        else
+        {
+            IpWatchlist[req.ip].attempts = 0;
+        }
     }
     next();
 })
@@ -731,8 +737,8 @@ app.use(function(req, res, next) {
 
 // command line parsing //
 var target = "";
-IpWatchlist["127.0.0.1"] = new IpWatch(true, 0, Date.now());
-IpWatchlist["::1"] = new IpWatch(true, 0, Date.now());
+IpWatchlist["127.0.0.1"] = new IpWatch(true, 0);
+IpWatchlist["::1"] = new IpWatch(true, 0);
 
 process.argv.forEach(function(element) {
     if (element.length > 2 &&  element.substring(0,2) == "--")
@@ -767,7 +773,7 @@ process.argv.forEach(function(element) {
         {
             if (! IpWatchlist[element])
             {
-                IpWatchlist[element] = new IpWatch(true, 0, Date.now());;
+                IpWatchlist[element] = new IpWatch(true, 0);
             }
         } 
         target = "";

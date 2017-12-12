@@ -1,10 +1,10 @@
 var moment = require("moment");
 
-var IpWatch = function (isWhitelisted, attempts, latestattempttime) 
+var IpWatch = function (isWhitelisted, attempts) 
 {
     this.whitelisted = isWhitelisted;
     this.attempts = 0;
-    this.latestAttemptTime = latestattempttime;
+    this.latestAttemptTime = moment();
     this.methodCalls = 0;
     this.publicCalls = 0;
     this.invalidTokens = 0;
@@ -30,8 +30,11 @@ IpWatch.prototype.GetAttempts = function() {
 IpWatch.prototype.GetLatestAttemptTime = function() {
     return this.latestAttemptTime;
 }
+IpWatch.prototype.SetLatestAttemptTime = function() {
+    this.latestAttemptTime = moment();
+}
 IpWatch.prototype.IncrementAttempts = function() {
-    this.latestattempt = moment();
+    this.latestAttemptTime = moment();
     this.attempts++;
 }
 IpWatch.prototype.GetPublicCallCount = function() {
