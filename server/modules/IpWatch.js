@@ -51,8 +51,8 @@ IpWatch.prototype.BuildJSON = function(ip) {
         methodCalls: this.methodCalls,
         invalidTokens: this.invalidTokens,
         attempts: this.attempts,
-        latestAttemptTime: moment(this.latestAttemptTime).format("YYYY MMM DD (ddd), h:mm:ss a"),
-        blockedUntilTime: moment(this.latestAttemptTime).add(5 * this.invalidTokens, 's').format("YYYY MMM DD (ddd), h:mm:ss a")
+        latestAttemptTime: moment(this.latestAttemptTime).format("YYYY-MM-DDTHH:mm:ss"),
+        blockedUntilTime: moment(this.latestAttemptTime).add(5 * this.invalidTokens, 's').format("YYYY-MM-DDTHH:mm:ss")
     });
 }
 
