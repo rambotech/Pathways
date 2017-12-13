@@ -126,8 +126,8 @@ router.get('/', function(req, res) {
 });
 
 // Stats for all pathways... requires admin access token in the header
-router.get('/admin/pathway/summary', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /admin/pathway/summary )")
+router.get('/admin/pathways/summary', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /admin/pathways/summary )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     switch (ValidateAccessToken(req.ip, accessToken))
@@ -181,8 +181,8 @@ router.get('/admin/pathway/summary', function(req, res) {
 
 // Stats for a specific pathway... requires admin access token in the header, and the read or write token in the header
 // and the read token for the pathway.
-router.get('/pathway/stats/:pathwayId', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /pathway/stats/:pathwayId )")
+router.get('/pathways/stats/:pathwayId', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/stats/:pathwayId )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
@@ -224,8 +224,8 @@ router.get('/pathway/stats/:pathwayId', function(req, res) {
 //   maxPayloads: the cap on payloads waiting for pickup
 //   maxReferences: the cap on reference objects
 
-router.get('/pathway/create/:pathwayId', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /pathway/create/:pathwayId )")
+router.get('/pathways/create/:pathwayId', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/create/:pathwayId )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
@@ -280,8 +280,8 @@ router.get('/pathway/create/:pathwayId', function(req, res) {
     res.end();
 });
 
-router.get('/pathway/delete/:pathwayId', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /pathway/delete/:pathwayId )")
+router.get('/pathways/delete/:pathwayId', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/delete/:pathwayId )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     if (ValidateAccessToken(req.ip, accessToken) != 2)
@@ -305,8 +305,8 @@ router.get('/pathway/delete/:pathwayId', function(req, res) {
     res.end();
 });
 
-router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /pathway/:pathwayId/reference/set/:referenceKey )")
+router.post('/pathways/:pathwayId/references/set/:referenceKey', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/:pathwayId/references/set/:referenceKey )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
@@ -362,8 +362,8 @@ router.post('/pathway/:pathwayId/reference/set/:referenceKey', function(req, res
     res.end();
 });
 
-router.get('/pathway/:pathwayId/reference/get/:referenceKey', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /pathway/:pathwayId/reference/get/:referenceKey )")
+router.get('/pathways/:pathwayId/references/get/:referenceKey', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/:pathwayId/references/get/:referenceKey )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
@@ -411,8 +411,8 @@ router.get('/pathway/:pathwayId/reference/get/:referenceKey', function(req, res)
     res.end(content);
 });
 
-router.get('/pathway/:pathwayId/reference/delete/:referenceKey', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /pathway/:pathwayId/reference/delete/:referenceKey )")
+router.get('/pathways/:pathwayId/references/delete/:referenceKey', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/:pathwayId/references/delete/:referenceKey )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
@@ -447,8 +447,8 @@ router.get('/pathway/:pathwayId/reference/delete/:referenceKey', function(req, r
     res.end();
 });
 
-router.get('/pathway/:pathwayId/payload/read', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /pathway/:pathwayId/payload/read )")
+router.get('/pathways/:pathwayId/payloads/read', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/:pathwayId/payloads/read )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
@@ -497,8 +497,8 @@ router.get('/pathway/:pathwayId/payload/read', function(req, res) {
     res.end(content);
 });
 
-router.post('/pathway/:pathwayId/payload/write', function(req, res) {
-    LogInfo(req.ip + ": Method call to ( /pathway/:pathwayId/payload/write )")
+router.post('/pathways/:pathwayId/payloads/write', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/:pathwayId/payloads/write )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
