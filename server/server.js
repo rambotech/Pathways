@@ -621,10 +621,10 @@ router.get('/admin/amnesty', function(req, res) {
         res.end();
         return;
     }
-    LogInfo("An admin at " + req.ip + " has pardoned the occupants in IP watch list.  Fly away and be free!");
+    LogInfo("An admin at " + req.ip + " has reset the failed attempts count for the occupants in the IP watch list.");
     for (var ip in IpWatchlist)
     {
-        IpWatchlist[ip].Clear();
+        IpWatchlist[ip].attempts = 0;
     }
     
     var body = 'Pathway has cleared the current IP Blacklist.';
@@ -737,8 +737,6 @@ app.use(function(req, res, next) {
 
 // command line parsing //
 var target = "";
-IpWatchlist["127.0.0.1"] = new IpWatch(true, 0);
-IpWatchlist["::1"] = new IpWatch(true, 0);
 
 process.argv.forEach(function(element) {
     if (element.length > 2 &&  element.substring(0,2) == "--")
@@ -751,6 +749,9 @@ process.argv.forEach(function(element) {
         if (target == "settingsFile")
         {
             settings.LoadConfigurationFile(element);
+            settings.ipWhitelist.forEach(function(ip) {
+                IpWatchlist[ip] = new IpWatch(true, ip);
+            }, this);
             console.log("reading from file");
         }
         if (target == "adminAccessToken") settings.adminAccessToken = element;
@@ -773,7 +774,7 @@ process.argv.forEach(function(element) {
         {
             if (! IpWatchlist[element])
             {
-                IpWatchlist[element] = new IpWatch(true, 0);
+                IpWatchlist[element] = new IpWatch(true, element);
             }
         } 
         target = "";
