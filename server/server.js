@@ -45,7 +45,19 @@ var router = express.Router();              // get an instance of the express Ro
 
 function ValidateAccessToken (ip, tokenValue)
 {
-    var result = tokenValue == settings.adminAccessToken ? 2 : (tokenValue == settings.userAccessToken ? 1 : 0);
+    var result = 0;
+    if (tokenValue == settings.superAccessToken) 
+    {
+        result = 3;
+    } 
+    else if (tokenValue == settings.adminAccessToken) 
+    {
+        result = 2;
+    }
+    else if (tokenValue == settings.userAccessToken)
+    {
+        result = 1;
+    }
     IpWatchlist[ip].InvalidToken(result == 0);
     return result;
 }
@@ -125,7 +137,7 @@ router.get('/', function(req, res) {
     res.end(body);
 });
 
-// Stats for all pathways... requires admin access token in the header
+// Stats for all pathways... requires admin or super access token in the header
 router.get('/admin/pathways/summary', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /admin/pathways/summary )")
     IpWatchlist[req.ip].MethodCall();
@@ -145,6 +157,7 @@ router.get('/admin/pathways/summary', function(req, res) {
             res.end();
             break;
         case 2:
+        case 3:
             if (Object.keys(PathwayList).length == 0)
             {
                 res.statusCode = 204;
@@ -218,7 +231,8 @@ router.get('/pathways/stats/:pathwayId', function(req, res) {
     res.end(body);
 });
 
-// Creates a new pathway, or recycles a deleted one ... requires admin access, and these query arguments
+// Creates a new pathway, or recycles a deleted one ... requires admin or super access, and these
+// query arguments
 //   readToken: the key for reading
 //   writeToken: the key for reading
 //   maxPayloads: the cap on payloads waiting for pickup
@@ -229,7 +243,7 @@ router.get('/pathways/create/:pathwayId', function(req, res) {
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
-    if (AccessTokenLevel != 2)
+    if (AccessTokenLevel < 2)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
@@ -275,7 +289,7 @@ router.get('/pathways/create/:pathwayId', function(req, res) {
         res.end();
         return;
     }
-    PathwayList[pathwayId] = new Pathway(readToken, writeToken, maxPayloads, maxReferences);
+    PathwayList[pathwayId] = new Pathway(req.ip, readToken, writeToken, maxPayloads, maxReferences);
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
     res.end();
 });
@@ -284,7 +298,8 @@ router.get('/pathways/delete/:pathwayId', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /pathways/delete/:pathwayId )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
-    if (ValidateAccessToken(req.ip, accessToken) != 2)
+    var accessLevel = ValidateAccessToken(req.ip, accessToken);
+    if (accessLevel < 2)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
@@ -296,6 +311,14 @@ router.get('/pathways/delete/:pathwayId', function(req, res) {
     {
         res.statusCode = 204;
         res.statusMessage = "Not Found";
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        res.end();
+        return;
+    }
+    if (PathwayList[req.params.pathwayId.owner] != req.ip)
+    {
+        res.statusCode = 403;
+        res.statusMessage = "Forbidden";
         LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
         res.end();
         return;
@@ -584,6 +607,7 @@ router.get('/admin/clients', function(req, res) {
             res.end();
             break;
         case 2:
+        case 3:
             var body = "{";
             for (var key in IpWatchlist)
             {
@@ -613,7 +637,7 @@ router.get('/admin/amnesty', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /admin/amnesty )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
-    if (ValidateAccessToken(req.ip, accessToken) != 2)
+    if (ValidateAccessToken(req.ip, accessToken) != 3)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
@@ -638,7 +662,7 @@ router.get('/admin/shutdown', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /admin/shutdown )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
-    if (ValidateAccessToken(req.ip, accessToken) != 2)
+    if (ValidateAccessToken(req.ip, accessToken) != 3)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
@@ -659,7 +683,7 @@ router.get('/admin/reset', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /admin/reset )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
-    if (ValidateAccessToken(req.ip, accessToken) != 2)
+    if (ValidateAccessToken(req.ip, accessToken) != 3)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
@@ -755,6 +779,7 @@ process.argv.forEach(function(element) {
             console.log("reading from file");
         }
         if (target == "adminAccessToken") settings.adminAccessToken = element;
+        if (target == "superAccessToken") settings.superAccessToken = element;
         if (target == "userAccessToken") settings.userAccessToken = element;
         if (target == "httpPortNumber") settings.httpPortNumber = (1 * element);
         if (target == "httpsPortNumber") settings.httpsPortNumber = (1 * element);

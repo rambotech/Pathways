@@ -1,13 +1,16 @@
 var moment  = require("moment");
 
-var Pathway = function (readtoken, writetoken, maxPayloads, maxReferences) {
+var Pathway = function (owner, readtoken, writetoken, maxPayloads, maxReferences) {
+    this.owner = owner;
     this.readtoken = readtoken;
     this.writetoken = writetoken;
     this.maxPayloads = maxPayloads;
     this.maxReferences = maxReferences;
     this.readsize = 0;
     this.writesize = 0;
+    this.readdenytally = 0;
     this.readtally = 0;
+    this.writedenytally = 0;
     this.writetally = 0;
     this.payloads = [ ];
     this.references = { };
@@ -23,10 +26,16 @@ Pathway.prototype.GetWriteToken = function() {
     return this.writetoken;
 }
 Pathway.prototype.GetReadTally = function() {
-    return this.writetally;
+    return this.readtally;
+}
+Pathway.prototype.GetReadDenyTally = function() {
+    return this.readdenytally;
 }
 Pathway.prototype.GetWriteTally = function() {
-    return this.readtally;
+    return this.writetally;
+}
+Pathway.prototype.GetWriteDenyTally = function() {
+    return this.writedenytally;
 }
 Pathway.prototype.GetReadSize = function() {
     return this.readsize;

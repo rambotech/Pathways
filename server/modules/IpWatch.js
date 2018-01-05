@@ -8,7 +8,7 @@ var IpWatch = function (isWhitelisted, attempts)
     this.methodCalls = 0;
     this.publicCalls = 0;
     this.invalidTokens = 0;
-    }
+}
 IpWatch.prototype.IsWhitelisted = function () {
     return this.whitelisted;
 }

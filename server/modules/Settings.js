@@ -3,6 +3,7 @@ var fs  = require("fs");
 var Settings = function () 
 {
     this.publicName = "Default";
+    this.superAccessToken = "0a1fe9bc-7548-45ae-bebd-9263cf112e07";
     this.adminAccessToken = "36a1a42f-079b-4bde-8660-10b101465f22";
     this.userAccessToken = "9bcc39ce-0b6f-418f-9dbf-b7653d391cb1";
     this.httpPortNumber = 5670;
@@ -33,6 +34,7 @@ Settings.prototype.LoadConfigurationFile = function(settingsFile)
         return false;
     }
 	if (settingsJSON["publicName"]) this.publicName = settingsJSON["publicName"];
+	if (settingsJSON["superAccessToken"]) this.superAccessTokenn = settingsJSON["superAccessToken"];
 	if (settingsJSON["adminAccessToken"]) this.adminAccessToken = settingsJSON["adminAccessToken"];
 	if (settingsJSON["userAccessToken"]) this.userAccessToken = settingsJSON["userAccessToken"];
 	if (settingsJSON["httpPortNumber"]) this.httpPortNumber = settingsJSON["httpPortNumber"];
