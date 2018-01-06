@@ -6,16 +6,12 @@
 
 cd server
 
-nodejs server/server.js --settingsFile server/test.config 
---httpPortNumber 5670 --httpsPortNumber 5671 --loggingLevel 0 > $HOME/pathways-srv1.txt &
+nodejs server.js --settingsFile server/test.config > $HOME/pathways-srv1.txt &
 
-nodejs server/server.js --settingsFile server/test.config \
---httpPortNumber 5672 --httpsPortNumber 5673 --loggingLevel 0 > $HOME/pathways-srv2.txt &
+nodejs server.js --settingsFile server/test.config --httpPortNumber 5672 --httpsPortNumber 5673 > $HOME/pathways-srv2.txt &
 
-nodejs server/server.js --settingsFile server/test.config \
---httpPortNumber 5674 --httpsPortNumber 5675 --loggingLevel 0 > $HOME/pathways-srv3.txt &
+nodejs server.js --settingsFile server/test.config --httpPortNumber 5674 --httpsPortNumber 5675 > $HOME/pathways-srv3.txt &
 
-nodejs server/server.js --settingsFile server/test.config \
---httpPortNumber 5676 --httpsPortNumber 5677 --loggingLevel 0 > $HOME/pathways-srv4.txt &
+nodejs server.js --settingsFile server/test.config --httpPortNumber 5676 --httpsPortNumber 5677 > $HOME/pathways-srv4.txt &
 
 cd ..
