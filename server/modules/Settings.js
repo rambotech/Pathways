@@ -34,7 +34,7 @@ Settings.prototype.LoadConfigurationFile = function(settingsFile)
         return false;
     }
 	if (settingsJSON["publicName"]) this.publicName = settingsJSON["publicName"];
-	if (settingsJSON["superAccessToken"]) this.superAccessTokenn = settingsJSON["superAccessToken"];
+	if (settingsJSON["superAccessToken"]) this.superAccessToken = settingsJSON["superAccessToken"];
 	if (settingsJSON["adminAccessToken"]) this.adminAccessToken = settingsJSON["adminAccessToken"];
 	if (settingsJSON["userAccessToken"]) this.userAccessToken = settingsJSON["userAccessToken"];
 	if (settingsJSON["httpPortNumber"]) this.httpPortNumber = settingsJSON["httpPortNumber"];
