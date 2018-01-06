@@ -315,7 +315,7 @@ router.get('/pathways/delete/:pathwayId', function(req, res) {
         res.end();
         return;
     }
-    if (PathwayList[req.params.pathwayId.owner] != req.ip)
+    if (PathwayList[req.params.pathwayId].owner != req.ip)
     {
         res.statusCode = 403;
         res.statusMessage = "Forbidden";
