@@ -112,7 +112,7 @@ function ValidateId(id)
                 break;
 
             default:
-                isValid =
+                isValid = thisChar == "." || 
                     thisChar == "_" || thisChar == "-" || (thisChar >= "A" && thisChar <= "Z") || 
                     (thisChar >= "a" && thisChar <= "z") || (thisChar >= "0" && thisChar <= "9");
                 break;
@@ -360,7 +360,7 @@ router.get('/pathways/:pathwayId/references/list', function(req, res) {
         return;
     }
     LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
-    res.end(JSON.stringify(PathwayList[req.params.pathwayId].references));
+    res.end(JSON.stringify(Object.keys(PathwayList[req.params.pathwayId].references)));
 });
 
 router.post('/pathways/:pathwayId/references/set/:referenceKey', function(req, res) {
@@ -789,9 +789,9 @@ app.use(function(req, res, next) {
     }
     next();
 })
-.use(bodyParser.urlencoded({ extended: false }))
-.use(bodyParser.text({ type: 'text/plain' }))
-.use(bodyParser.json({ type: 'application/*+json' }))
+.use(bodyParser.urlencoded({ limit: 2097152, extended: false }))
+.use(bodyParser.text({ limit: 2097152, type: 'text/plain' }))
+.use(bodyParser.json({ limit: 2097152, type: 'application/*+json' }))
 .use('/api', router);
 
 // command line parsing //
