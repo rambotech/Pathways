@@ -328,6 +328,41 @@ router.get('/pathways/delete/:pathwayId', function(req, res) {
     res.end();
 });
 
+router.get('/pathways/:pathwayId/references/list', function(req, res) {
+    LogInfo(req.ip + ": Method call to ( /pathways/:pathwayId/references/list )")
+    IpWatchlist[req.ip].MethodCall();
+    var accessToken = req.header("Access-Token") || "()";
+    var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    if (AccessTokenLevel == 0)
+    {
+        res.statusCode = 401;
+        res.statusMessage = "Not Authorized";
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        res.end();
+        return;
+    }
+    if (! PathwayList[req.params.pathwayId])
+    {
+        res.statusCode = 404;
+        res.statusMessage = " Not Found";
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        res.end();
+        return;
+    }
+    var pathwayToken = req.header("Pathway-Token") || "()";
+    var pathwayTokenLevel = ValidatePathwayToken(req.params.pathwayId, pathwayToken);
+    if (pathwayTokenLevel < 1) // requires write access to the pathway
+    {
+        res.statusCode = 403;
+        res.statusMessage = "Forbidden";
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        res.end();
+        return;
+    }
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    res.end(JSON.stringify(PathwayList[req.params.pathwayId].references));
+});
+
 router.post('/pathways/:pathwayId/references/set/:referenceKey', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /pathways/:pathwayId/references/set/:referenceKey )")
     IpWatchlist[req.ip].MethodCall();
