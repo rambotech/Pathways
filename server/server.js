@@ -62,11 +62,12 @@ function ValidateAccessToken (ip, tokenValue)
     return result;
 }
 
-function LogTrace (message) { if (settings.loggingLevel == 0) console.log(message); }
-function LogDebug (message) { if (settings.loggingLevel <= 1) console.log(message); }
-function LogInfo (message) { if (settings.loggingLevel <= 2) console.log(message); }
-function LogWarning (message) { if (settings.loggingLevel <= 3) console.log(message); }
-function LogError (message) { if (settings.loggingLevel <= 4) console.log(message); }
+function LogVerbose (message) { if (settings.loggingLevel == 0) console.log(message); }
+function LogTrace (message) { if (settings.loggingLevel <= 1) console.log(message); }
+function LogDebug (message) { if (settings.loggingLevel <= 2) console.log(message); }
+function LogInfo (message) { if (settings.loggingLevel <= 3) console.log(message); }
+function LogWarning (message) { if (settings.loggingLevel <= 4) console.log(message); }
+function LogError (message) { if (settings.loggingLevel <= 5) console.log(message); }
 
 function ValidatePathwayToken(pathwayId, token)
 {
@@ -131,9 +132,11 @@ router.get('/', function(req, res) {
         "<p>This is a no-frills drop-off and pickup location for data packets between applications</p>" +
         "<p>Pathways RestAPI Server is open-source, written in express. Visit <a target='_blank' href='https://github.com/rambotech/Pathways'>this repository on GitHub</a> for more information.</p>" +
         "</body></html>";
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Content-Length', body.length);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     res.end(body);
 });
 
@@ -147,13 +150,13 @@ router.get('/admin/pathways/summary', function(req, res) {
         case 0:
             res.statusCode = 401;
             res.statusMessage = "Not Authorized";
-            LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+            LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
             res.end();
             break;        
         case 1:
             res.statusCode = 403;
             res.statusMessage = "Forbidden";
-            LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+            LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
             res.end();
             break;
         case 2:
@@ -162,7 +165,7 @@ router.get('/admin/pathways/summary', function(req, res) {
             {
                 res.statusCode = 204;
                 res.statusMessage = "No Content";
-                LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+                LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
                 res.end();
             }
             else
@@ -177,9 +180,11 @@ router.get('/admin/pathways/summary', function(req, res) {
                     body += PathwayList[key].BuildJSON(key);
                 }
                 body += "}";
-                LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+                LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('Content-Length', body.length);
+                res.statusCode = 200;
+                res.statusMessage = "OK";
                 res.end(body);
             }
             break;
@@ -187,7 +192,7 @@ router.get('/admin/pathways/summary', function(req, res) {
             LogError("Unknown access token level");
             res.statusCode = 500;
             res.statusMessage = "Internal Server Error";
-            LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+            LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
             res.end();
     }
 });
@@ -199,11 +204,13 @@ router.get('/pathways/stats/:pathwayId', function(req, res) {
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (AccessTokenLevel == 0)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -211,7 +218,7 @@ router.get('/pathways/stats/:pathwayId', function(req, res) {
     {
         res.statusCode = 204;
         res.statusMessage = "Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -225,7 +232,7 @@ router.get('/pathways/stats/:pathwayId', function(req, res) {
         return;
     }
     var body = "{ " + PathwayList[req.params.pathwayId].BuildJSON(req.params.pathwayId) + "}";
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Length', body.length);
     res.end(body);
@@ -243,11 +250,13 @@ router.get('/pathways/create/:pathwayId', function(req, res) {
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (AccessTokenLevel < 2)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -255,7 +264,7 @@ router.get('/pathways/create/:pathwayId', function(req, res) {
     {
         res.statusCode = 400;
         res.statusMessage = "Invalid pathway name";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -263,7 +272,7 @@ router.get('/pathways/create/:pathwayId', function(req, res) {
     {
         res.statusCode = 429;
         res.statusMessage = "Too many requests";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -271,7 +280,7 @@ router.get('/pathways/create/:pathwayId', function(req, res) {
     {
         res.statusCode = 409;
         res.statusMessage = "Conflict";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -290,7 +299,7 @@ router.get('/pathways/create/:pathwayId', function(req, res) {
         return;
     }
     PathwayList[pathwayId] = new Pathway(req.ip, readToken, writeToken, maxPayloads, maxReferences);
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.end();
 });
 
@@ -299,11 +308,13 @@ router.get('/pathways/delete/:pathwayId', function(req, res) {
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var accessLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (accessLevel < 2)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -311,7 +322,7 @@ router.get('/pathways/delete/:pathwayId', function(req, res) {
     {
         res.statusCode = 204;
         res.statusMessage = "Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -319,12 +330,12 @@ router.get('/pathways/delete/:pathwayId', function(req, res) {
     {
         res.statusCode = 403;
         res.statusMessage = "Forbidden";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
     delete PathwayList[req.params.pathwayId];
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.end();
 });
 
@@ -333,11 +344,13 @@ router.get('/pathways/:pathwayId/references/list', function(req, res) {
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (AccessTokenLevel == 0)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -345,7 +358,7 @@ router.get('/pathways/:pathwayId/references/list', function(req, res) {
     {
         res.statusCode = 404;
         res.statusMessage = " Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -355,11 +368,11 @@ router.get('/pathways/:pathwayId/references/list', function(req, res) {
     {
         res.statusCode = 403;
         res.statusMessage = "Forbidden";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.end(JSON.stringify(Object.keys(PathwayList[req.params.pathwayId].references)));
 });
 
@@ -368,11 +381,13 @@ router.post('/pathways/:pathwayId/references/set/:referenceKey', function(req, r
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (AccessTokenLevel == 0)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -380,7 +395,7 @@ router.post('/pathways/:pathwayId/references/set/:referenceKey', function(req, r
     {
         res.statusCode = 400;
         res.statusMessage = "Invalid reference name";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -388,7 +403,7 @@ router.post('/pathways/:pathwayId/references/set/:referenceKey', function(req, r
     {
         res.statusCode = 404;
         res.statusMessage = " Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -398,7 +413,7 @@ router.post('/pathways/:pathwayId/references/set/:referenceKey', function(req, r
     {
         res.statusCode = 403;
         res.statusMessage = "Forbidden";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -407,16 +422,16 @@ router.post('/pathways/:pathwayId/references/set/:referenceKey', function(req, r
     {
         res.statusCode = 429
         res.statusMessage = "Too Many Requests";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
     var content = req.body;
     var contentType = req.contentType || req.headers["content-type"];
-    LogTrace("content: " + content);
-    LogTrace("contentType: " + contentType);
+    LogVerbose("content: " + content);
+    LogVerbose("contentType: " + contentType);
     PathwayList[req.params.pathwayId].SetReference(req.params.referenceKey, new Lockbox(contentType, content));
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.end();
 });
 
@@ -425,11 +440,13 @@ router.get('/pathways/:pathwayId/references/get/:referenceKey', function(req, re
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (AccessTokenLevel == 0)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -437,7 +454,7 @@ router.get('/pathways/:pathwayId/references/get/:referenceKey', function(req, re
     {
         res.statusCode = 404;
         res.statusMessage = " Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -447,7 +464,7 @@ router.get('/pathways/:pathwayId/references/get/:referenceKey', function(req, re
     {
         res.statusCode = 403;
         res.statusMessage = "Forbidden";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -456,16 +473,16 @@ router.get('/pathways/:pathwayId/references/get/:referenceKey', function(req, re
     {
         res.statusCode = 204;
         res.statusMessage = " Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
-    LogTrace("reference read: " + JSON.stringify(lockbox));
+    LogVerbose("reference read: " + JSON.stringify(lockbox));
     var content = lockbox.GetContent();
     var contentType = lockbox.GetContentType();
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', content.length);
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.end(content);
 });
 
@@ -474,11 +491,13 @@ router.get('/pathways/:pathwayId/references/delete/:referenceKey', function(req,
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (AccessTokenLevel == 0)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -486,7 +505,7 @@ router.get('/pathways/:pathwayId/references/delete/:referenceKey', function(req,
     {
         res.statusCode = 404;
         res.statusMessage = " Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -496,12 +515,12 @@ router.get('/pathways/:pathwayId/references/delete/:referenceKey', function(req,
     {
         res.statusCode = 403;
         res.statusMessage = "Forbidden";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
     PathwayList[req.params.pathwayId].DeleteReference(req.params.referenceKey);
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.end();
 });
 
@@ -510,11 +529,13 @@ router.get('/pathways/:pathwayId/payloads/read', function(req, res) {
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (AccessTokenLevel == 0)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -522,7 +543,7 @@ router.get('/pathways/:pathwayId/payloads/read', function(req, res) {
     {
         res.statusCode = 404;
         res.statusMessage = "Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -532,7 +553,7 @@ router.get('/pathways/:pathwayId/payloads/read', function(req, res) {
     {
         res.statusCode = 403;
         res.statusMessage = "Forbidden";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -540,18 +561,18 @@ router.get('/pathways/:pathwayId/payloads/read', function(req, res) {
     {
         res.statusCode = 204;
         res.statusMessage = "No Content";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
     var lockbox = PathwayList[req.params.pathwayId].ReadPayload();
-    LogTrace("payload read: " + JSON.stringify(lockbox));
+    LogVerbose("payload read: " + JSON.stringify(lockbox));
     var content = lockbox.GetContent();
     var contentType = lockbox.GetContentType();
     totalPayloadSize -= content.length;
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', content.length);
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.end(content);
 });
 
@@ -560,11 +581,13 @@ router.post('/pathways/:pathwayId/payloads/write', function(req, res) {
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
     var AccessTokenLevel = ValidateAccessToken(req.ip, accessToken);
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (AccessTokenLevel == 0)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -575,7 +598,7 @@ router.post('/pathways/:pathwayId/payloads/write', function(req, res) {
     {
         res.statusCode = 404;
         res.statusMessage = " Not Found";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -585,7 +608,7 @@ router.post('/pathways/:pathwayId/payloads/write', function(req, res) {
     {
         res.statusCode = 403;
         res.statusMessage = "Forbidden";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -593,7 +616,7 @@ router.post('/pathways/:pathwayId/payloads/write', function(req, res) {
     {
         res.statusCode = 429
         res.statusMessage = "Too many requests";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -601,7 +624,7 @@ router.post('/pathways/:pathwayId/payloads/write', function(req, res) {
     {
         res.statusCode = 409
         res.statusMessage = "Payload over maximum size limit";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -609,17 +632,17 @@ router.post('/pathways/:pathwayId/payloads/write', function(req, res) {
     {
         res.statusCode = 409
         res.statusMessage = "Payload exceeds total maximum size cap on all payloads for all pathways";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
     var content = req.body;
     var contentType = req.contentType || req.headers["content-type"];
-    LogTrace("content: " + content);
-    LogTrace("contentType: " + contentType);
+    LogVerbose("content: " + content);
+    LogVerbose("contentType: " + contentType);
     thisPayload.WritePayload(new Lockbox(contentType, content));
     totalPayloadSize += content.length;
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.end();
 });
 
@@ -627,18 +650,20 @@ router.get('/admin/clients', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /admin/clients )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     switch (ValidateAccessToken(req.ip, accessToken))
     {
         case 0:
             res.statusCode = 401;
             res.statusMessage = "Not Authorized";
-            LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+            LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
             res.end();
             break;        
         case 1:
             res.statusCode = 403;
             res.statusMessage = "Forbidden";
-            LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+            LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
             res.end();
             break;
         case 2:
@@ -654,7 +679,7 @@ router.get('/admin/clients', function(req, res) {
             }
             body += "}";
             //body = JSON.stringify(IpWatchlist);
-            LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+            LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
             res.setHeader('Content-Type', 'application/json');
             res.setHeader('Content-Length', body.length);
             res.end(body);
@@ -662,7 +687,7 @@ router.get('/admin/clients', function(req, res) {
         default:
             res.statusCode = 500
             res.statusMessage = "Unrecognized access code";
-            LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+            LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
             res.end();
             break;
     }
@@ -672,11 +697,13 @@ router.get('/admin/amnesty', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /admin/amnesty )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (ValidateAccessToken(req.ip, accessToken) != 3)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -687,7 +714,7 @@ router.get('/admin/amnesty', function(req, res) {
     }
     
     var body = 'Pathway has cleared the current IP Blacklist.';
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Length', body.length);
     res.end(body);    
@@ -697,17 +724,19 @@ router.get('/admin/shutdown', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /admin/shutdown )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (ValidateAccessToken(req.ip, accessToken) != 3)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
     LogInfo("An admin at " + req.ip + " told me to shutdown.  Bye.");
     var body = 'Pathways server is shutting down.';
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Length', body.length);
     res.end(body);    
@@ -718,11 +747,13 @@ router.get('/admin/reset', function(req, res) {
     LogInfo(req.ip + ": Method call to ( /admin/reset )")
     IpWatchlist[req.ip].MethodCall();
     var accessToken = req.header("Access-Token") || "()";
+    res.statusCode = 200;
+    res.statusMessage = "OK";
     if (ValidateAccessToken(req.ip, accessToken) != 3)
     {
         res.statusCode = 401;
         res.statusMessage = "Not Authorized";
-        LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+        LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
         res.end();
         return;
     }
@@ -746,7 +777,7 @@ router.get('/admin/reset', function(req, res) {
     totalPayloadSize = (0 * 1);
     
     var body = 'Pathways server is now at factory reset.';
-    LogTrace(req.ip + ": " + res.statusCode + ": " + res.message);
+    LogTrace(req.ip + ": " + res.statusCode + ": " + res.statusMessage);
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Length', body.length);
     res.end(body);    
