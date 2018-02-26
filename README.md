@@ -1,13 +1,11 @@
 # Pathways
 Pathways is a Restful API server for passing data payloads between application instances.  The server is intentionally designed to be lightweight,
-fast, use simple security... and to gaurantee nothing.
+fast, use simple security... and to guarantee nothing.  The applications using Pathways server are responsible for tracking lost payloads, and determining how to reconcile them.
 
-Pathways is intended for numerous instances to support data payload brokering between a sending application and a requesting application.  Both the sender
-and the receiver must call the api to deliver or pickup data.
+Pathways server is best thought of as implementing a UDP-style fire-and-forget protocol using http/https, but the receiver must request the payload when it is ready.  Thus timely reception by the receiver is never guaranteed.
 
-Pathways does not support multiple point delivery.  It was designed for a fleet of work creators to distribute work, and a fleet of work processors to compete for
-those work items (i.e. first-come, first-serve) and return the .  It is therefore well-suited
+Pathways does not support multiple point delivery.  It was designed for a fleet of work creators to distribute work on a pathway, and a fleet of work processors to compete for
+those work items (i.e. first-come, first-serve) then return the results via a different pathway.  It is therefore well-suited to full-circle (client->server->client) fleet processing.
 
-## Overview
-Pathways is intended for one-or-many message generators to send data lockboxes (a container with data) to one or one-of-many recipient applications.
-The lockbox is pushed in a holding area assigned to the path, pending a p
+## Additional
+The repository BOG.Pathways.Client contains a .NET Standard 2.0 client assembly, to communicate with a Pathways server.
